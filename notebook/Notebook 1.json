@@ -1,0 +1,620 @@
+{
+	"name": "Notebook 1",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "trainingsparkpl",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0958c701-36eb-413a-911e-a4440c57ceb1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/9260bc06-d410-4a17-9670-50b0aaee72ad/resourceGroups/Synaps_Training/providers/Microsoft.Synapse/workspaces/vijaytraining/bigDataPools/trainingsparkpl",
+				"name": "trainingsparkpl",
+				"type": "Spark",
+				"endpoint": "https://vijaytraining.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/trainingsparkpl",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"import pyspark.pandas as ps\r\n",
+					"from pyspark.sql.functions import lit\r\n",
+					"\r\n",
+					"# Define connection properties\r\n",
+					"url = \"jdbc:sqlserver://vijaytraining.sql.azuresynapse.net:1433;database=trainingsqlpl;user=sqladminuser;password=Vijay1234;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30\"\r\n",
+					"properties = {\r\n",
+					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
+					"}\r\n",
+					"\r\n",
+					"\r\n",
+					"file_path = \"abfss://vijay@synapsdl.dfs.core.windows.net/*.ndjson\"\r\n",
+					"\r\n",
+					"# Read the NDJSON file into a DataFrame\r\n",
+					"df = spark.read.json(file_path)\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"df = df.withColumn(\"date_utc\", lit(df[\"date.utc\"])) \\\r\n",
+					"       .withColumn(\"date_local\", lit(df[\"date.local\"])) \\\r\n",
+					"       .drop(\"date\")\r\n",
+					"\r\n",
+					"df = df.withColumn(\"averagingPeriod_unit\", df[\"averagingPeriod.unit\"]) \\\r\n",
+					"       .withColumn(\"averagingPeriod_value\", df[\"averagingPeriod.value\"]) \\\r\n",
+					"       .drop(\"averagingPeriod\")\r\n",
+					"df = df.withColumn(\"coordinates_lat\", df[\"coordinates.latitude\"]) \\\r\n",
+					"       .withColumn(\"coordinates_long\", df[\"coordinates.longitude\"]) \\\r\n",
+					"       .drop(\"coordinates\")\r\n",
+					"# Show the DataFrame to verify the transformation\r\n",
+					"df=df.drop('attribution')\r\n",
+					"df.toPandas()\r\n",
+					""
+				],
+				"execution_count": 281
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"\r\n",
+					"# Define the target table name in your dedicated SQL pool\r\n",
+					"table_name = \"air_quality\"\r\n",
+					"#df = df.withColumn(\"city\", df[\"city\"].cast(\"string\"))\r\n",
+					"# Write the DataFrame to the dedicated SQL pool\r\n",
+					"df.write.jdbc(url=url, table=table_name, mode=\"append\", properties=properties)\r\n",
+					""
+				],
+				"execution_count": 282
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"path = \"abfss://vijay@synapsdl.dfs.core.windows.net/countries.csv\"\r\n",
+					"\r\n",
+					"df = spark.read.option(\"header\", True).csv(path)\r\n",
+					"df.show()\r\n",
+					"df.write.jdbc(url=url, table='country', mode=\"append\", properties=properties)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"\r\n",
+					"df_air = spark.read.jdbc(url=url, table=\"air_quality\", properties=properties)\r\n",
+					"df_country = spark.read.jdbc(url=url, table=\"country\", properties=properties)\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Assuming we're filtering df1 based on values in 'id' column of df2\r\n",
+					"\r\n",
+					"# Collect unique 'id' values from df2 into a list\r\n",
+					"country_to_filter = df_country.select(\"country_code\").distinct().rdd.flatMap(lambda x: x).collect()\r\n",
+					"\r\n",
+					"# Filter df1 where 'id' is in the collected list\r\n",
+					"filtered_df_air = df_air.filter(df_air[\"country\"].isin(country_to_filter))\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Filter for required parameters\r\n",
+					"filtered_df_air.select('parameter').distinct().show()\r\n",
+					"param_list=['PM25', 'PM10', 'O3', 'NO2', 'CO']\r\n",
+					"filtered_df_air1 = filtered_df_air.filter(filtered_df_air[\"parameter\"].isin(param_list))"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"filtered_df_air1.select('parameter').distinct().show()\r\n",
+					"filtered_df_air2.dtypes"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"filtered_df_air1 = filtered_df_air.select('city','country','parameter','unit','value','date_utc')\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"filtered_df_air2=filtered_df_air1.filter(filtered_df_air1['value'] > 0)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"filtered_df_air2.filter(filtered_df_air1['value'] < 0).show()"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"filtered_df_air2.select('date_utc').show(1)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col, to_timestamp, avg, expr\r\n",
+					"from pyspark.sql.window import Window\r\n",
+					"\r\n",
+					"# Ensure 'date_utc' is a datetime type\r\n",
+					"#filtered_df_air2 = filtered_df_air2.withColumn(\"date_utc\", to_timestamp(col(\"date_utc\"), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z''\"))\r\n",
+					"filtered_df_air2 = filtered_df_air2.withColumn('date_utc', filtered_df_air2.date_utc.cast('timestamp'))\r\n",
+					"filtered_df_air2 = filtered_df_air2.withColumn('value', filtered_df_air2.value.cast('int'))"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Define the window specification for a 24-hour rolling window\r\n",
+					"#window_spec = Window.partitionBy(\"city\", \"parameter\").orderBy(\"date_utc\").rangeBetween(-86400, 0)\r\n",
+					"\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import expr\r\n",
+					"from pyspark.sql import functions as F\r\n",
+					"days = lambda i: i * 86400\r\n",
+					"window_spec = Window \\\r\n",
+					"    .partitionBy(\"city\", \"parameter\") \\\r\n",
+					"    .orderBy(F.col(\"date_utc\").cast('long')) \\\r\n",
+					"    .rangeBetween(-days(1), 0)\r\n",
+					"\r\n",
+					"\r\n",
+					"    #orderBy(F.col(\"timestampGMT\").cast('long'))"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Calculate the rolling average\r\n",
+					"df_rolling_avg = filtered_df_air2.withColumn(\"24hr_rolling_avg\", avg(\"value\").over(window_spec))\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 290
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Writing Rolling Avg to DB\r\n",
+					"\r\n",
+					"\r\n",
+					"df_rolling_avg.write.jdbc(url=url, table='air_roll_avg', mode=\"append\", properties=properties)"
+				],
+				"execution_count": 294
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_rolling_avg.show()"
+				],
+				"execution_count": 303
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# AQI calculation function\r\n",
+					"from pyspark.sql.functions import udf, col\r\n",
+					"from pyspark.sql.types import DoubleType\r\n",
+					"def calculate_aqi(pm_obs, breakpoint_low, breakpoint_high, aqi_low, aqi_high):\r\n",
+					"    aqi = ((aqi_high - aqi_low) / (breakpoint_high - breakpoint_low)) * (pm_obs - breakpoint_low) + aqi_low\r\n",
+					"    return aqi\r\n",
+					"\r\n",
+					"# Register the function as a UDF\r\n",
+					"calculate_aqi_udf = udf(calculate_aqi, DoubleType())\r\n",
+					"\r\n",
+					"\r\n",
+					"# Define the AQI breakpoints and AQI values for PM2.5\r\n",
+					"breakpoint_low_PM25 = 12.1\r\n",
+					"breakpoint_high_PM25 = 35.4\r\n",
+					"aqi_low_PM25 = 51\r\n",
+					"aqi_high_PM25 = 100\r\n",
+					"\r\n",
+					"\r\n",
+					"# Define the AQI breakpoints and AQI values for PM10\r\n",
+					"breakpoint_low_PM10 = 55.0\r\n",
+					"breakpoint_high_PM10 = 154.0\r\n",
+					"aqi_low_PM10= 51\r\n",
+					"aqi_high_PM10 = 100\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 314
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_rolling_avg_PM25=df_rolling_avg.filter(df_rolling_avg['parameter'] == 'PM25')\r\n",
+					"df_rolling_avg_PM10=df_rolling_avg.filter(df_rolling_avg['parameter'] == 'PM10')"
+				],
+				"execution_count": 311
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Apply the UDF to calculate the AQI for PM2.5\r\n",
+					"df_aqi_pm25 = df_rolling_avg_PM25.withColumn(\"aqi_pm25\", calculate_aqi_udf(\r\n",
+					"    col(\"24hr_rolling_avg\"), \r\n",
+					"    lit(breakpoint_low_PM25), \r\n",
+					"    lit(breakpoint_high_PM25), \r\n",
+					"    lit(aqi_low_PM25), \r\n",
+					"    lit(aqi_high_PM25)\r\n",
+					"))"
+				],
+				"execution_count": 312
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_aqi_pm25.show()"
+				],
+				"execution_count": 317
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_aqi_pm10 = df_rolling_avg_PM10.withColumn(\"aqi_pm10\", calculate_aqi_udf(\r\n",
+					"    col(\"24hr_rolling_avg\"), \r\n",
+					"    lit(breakpoint_low_PM10), \r\n",
+					"    lit(breakpoint_high_PM10), \r\n",
+					"    lit(aqi_low_PM10), \r\n",
+					"    lit(aqi_high_PM10)\r\n",
+					"))"
+				],
+				"execution_count": 318
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_aqi_pm10.show()"
+				],
+				"execution_count": 319
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Loading the AQI tables into the DB.\r\n",
+					"df_aqi_pm10.write.jdbc(url=url, table='air_aqi_pm10', mode=\"append\", properties=properties)\r\n",
+					"df_aqi_pm25.write.jdbc(url=url, table='air_aqi_pm25', mode=\"append\", properties=properties)"
+				],
+				"execution_count": 320
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}
