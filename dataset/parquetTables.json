@@ -5,12 +5,6 @@
 			"referenceName": "vijaytraining-WorkspaceDefaultStorage",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"tablename": {
-				"type": "string",
-				"defaultValue": "@item.Tables_in_hr"
-			}
-		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
