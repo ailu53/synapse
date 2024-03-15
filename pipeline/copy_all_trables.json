@@ -92,7 +92,13 @@
 							"outputs": [
 								{
 									"referenceName": "parquetTables",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"tablename": {
+											"value": "@item().Tables_in_hr",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
