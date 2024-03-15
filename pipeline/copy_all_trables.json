@@ -1,0 +1,111 @@
+{
+	"name": "copy_all_trables",
+	"properties": {
+		"activities": [
+			{
+				"name": "look for tables",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "MySqlSource",
+						"query": "show tables;"
+					},
+					"dataset": {
+						"referenceName": "MySqlTable1",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "foreach schema table",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "look for tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('look for tables').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "copy each table",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "MySqlSource",
+									"query": {
+										"value": "@{concat('SELECT * FROM',item().Tables_in_hr)}",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "mysqlcopy",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "parquetTables",
+									"type": "DatasetReference",
+									"parameters": {
+										"tablename": {
+											"value": "@item().Tables_in_hr",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}
