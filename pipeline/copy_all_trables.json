@@ -60,7 +60,7 @@
 								"source": {
 									"type": "MySqlSource",
 									"query": {
-										"value": "@{concat('SELECT * FROM',item().Tables_in_hr)}",
+										"value": "@{concat('SELECT * FROM ',item().Tables_in_hr)}",
 										"type": "Expression"
 									}
 								},
@@ -92,13 +92,7 @@
 							"outputs": [
 								{
 									"referenceName": "parquetTables",
-									"type": "DatasetReference",
-									"parameters": {
-										"tablename": {
-											"value": "@item().Tables_in_hr",
-											"type": "Expression"
-										}
-									}
+									"type": "DatasetReference"
 								}
 							]
 						}
