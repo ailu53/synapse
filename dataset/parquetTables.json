@@ -5,11 +5,20 @@
 			"referenceName": "vijaytraining-WorkspaceDefaultStorage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"tablename": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@{concat(dataset().tablename,'.parquet')}",
+					"type": "Expression"
+				},
 				"folderPath": "bronze",
 				"fileSystem": "mrk"
 			},
