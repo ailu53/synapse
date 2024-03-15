@@ -20,10 +20,7 @@
 					"value": "@{concat(dataset().tablename,'.parquet')}",
 					"type": "Expression"
 				},
-				"folderPath": {
-					"value": "@{concat('bronze/',dataset().tablename)}",
-					"type": "Expression"
-				},
+				"folderPath": "bronze",
 				"fileSystem": "mrk"
 			},
 			"compressionCodec": "snappy"
