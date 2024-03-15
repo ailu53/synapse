@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "vijaytraining"
+		},
+		"GitHub1_credential": {
+			"value": ""
+		},
+		"MySql1_connectionString": {
+			"value": ""
+		},
+		"vijaytraining-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:vijaytraining.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"GitHub1_properties_typeProperties_username": {
+			"value": "ailu53"
+		},
+		"vijaytraining-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://synapsdl.dfs.core.windows.net"
+		}
+	}
+}
