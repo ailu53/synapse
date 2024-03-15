@@ -1,0 +1,26 @@
+{
+	"name": "parquetTables",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "vijaytraining-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"tablename": {
+				"type": "string",
+				"defaultValue": "@item.Tables_in_hr"
+			}
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "bronze",
+				"fileSystem": "mrk"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
