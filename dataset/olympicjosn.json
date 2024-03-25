@@ -1,0 +1,17 @@
+{
+	"name": "olympicjosn",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "vijaytraining-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation"
+			}
+		},
+		"schema": {}
+	}
+}
