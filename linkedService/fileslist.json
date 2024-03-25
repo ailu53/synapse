@@ -1,0 +1,16 @@
+{
+	"name": "fileslist",
+	"properties": {
+		"annotations": [],
+		"type": "HttpServer",
+		"typeProperties": {
+			"url": "https://github.com/darshilparmar/tokyo-olympic-azure-data-engineering-project/tree/771dc1e2b355febe493288c7f0c5002a79b25a1b/data",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
