@@ -2,7 +2,7 @@
 	"name": "fileslist",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "HttpServer1",
+			"referenceName": "fileslist",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
